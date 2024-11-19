@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>360도 이미지 회전</title>
+  <style>
+    #product360 {
+      width: '100%';
+      height: '100%'; /* 필요에 따라 높이를 조정 */
+      position: relative;
+      display: flex; /* 플렉스 박스 활성화 */
+      justify-content: center; /* 가로 중앙 정렬 */
+      align-items: center; /* 세로 중앙 정렬 */
+    }
+    canvas {
+      width: 450px; /* 필요에 따라 크기 조정 */
+      height: auto; /* 비율 유지 */
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 360도 이미지를 표시할 div -->
+  <div id="product360">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <!-- 360도 이미지 회전 효과를 구현하는 자바스크립트 코드 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // 이미지 파일들
+      const images = [];
+      for (let i = 30001; i <= 30100; i++) {
+        images.push(`https://raw.githubusercontent.com/wndud630/module5/main/${i}.jpg`);
+      }
+
+      let currentIndex = Math.floor(images.length / 2); // 중간 이미지부터 시작
+      let isDragging = false;
+      let startX;
+      const rotationFactor = 1; // 회전 속도 조절 인자
+
+      // 캔버스 크기 설정
+      canvas.width = 1000;  // 너비 설정
+      canvas.height = 1000; // 높이 설정
+
+      // 이미지 로드
+      const imgElements = [];
+      let imagesLoaded = 0;
+      images.forEach((src, index) => {
+        const img = new Image();
+        img.src = src;
+img.onload = () => {
+  imgElements[index] = img;
+  imagesLoaded++;
+  console.log(`Image loaded: ${index}`); // 이미지 로드 확인
+  if (imagesLoaded === images.length) {
+    drawImage();
+  }
+};
+      });
+
+      // 이미지 그리기
+      function drawImage() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(imgElements[currentIndex], 0, 0, canvas.width, canvas.height);
+      }
+
+      // 마우스가 캔버스로 들어올 때 커서 이미지 변경
+      canvas.addEventListener('mouseenter', () => {
+        canvas.style.cursor = `url(https://cdn.imweb.me/thumbnail/20241111/cd03d21ffa98d.png), auto`;
+      });
+
+      // 드래그 이벤트 처리
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const dx = e.clientX - startX;
+          const numImages = imgElements.length;
+          const step = Math.round((dx / canvas.width) * numImages * rotationFactor);
+          currentIndex = (currentIndex + step + numImages) % numImages;
+          drawImage();
+          startX = e.clientX;
+        }
+      });
+
+      // 터치 이벤트
+      canvas.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+      });
+
+      canvas.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+          const dx = e.touches[0].clientX - startX;
+          const numImages = imgElements.length;
+          const step = Math.round((dx / canvas.width) * numImages * rotationFactor);
+          currentIndex = (currentIndex + step + numImages) % numImages;
+          drawImage();
+          startX = e.touches[0].clientX;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
